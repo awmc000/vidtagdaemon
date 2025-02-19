@@ -26,6 +26,10 @@ class TestApiEndpoints(unittest.TestCase):
         r = requests.get(apiAddress)
         self.assertEqual(r.status_code, 200)
     
+    def test_api_folders_created(self):
+        # TODO: Check that the API created its /working and /downloads folders.
+        self.assertTrue(False)
+    
     def test_download_single(self):
         payload = {
             'url': 'https://www.youtube.com/watch?v=nIeMvg2vSAw',
@@ -36,6 +40,19 @@ class TestApiEndpoints(unittest.TestCase):
         # TODO: Parse JSON in r.text
         # TODO: Get fileName from JSON
         # TODO: Check if fileName exists in downloads directory
+        self.assertTrue(False)
+    
+    def test_video_discarded(self):
+        payload = {
+            'url': 'https://www.youtube.com/watch?v=nIeMvg2vSAw',
+            'artist': 'Sematary',
+            'title': 'HEART SO PURE' 
+        }
+        r = requests.get(apiAddress, params=payload)
+        # TODO: Parse JSON in r.text
+        # TODO: Get fileName from JSON
+        # TODO: Check if fileName exists in downloads directory
+        # TODO: Check that there are no video files in the downloads directory whatsoever
         self.assertTrue(False)
     
     def test_download_album(self):
