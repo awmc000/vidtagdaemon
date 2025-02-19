@@ -11,6 +11,7 @@ as a command line argument.
 
 import unittest
 import requests
+import subprocess
 import sys
 
 apiAddress = None
@@ -23,6 +24,7 @@ class TestApiEndpoints(unittest.TestCase):
         
     def test_api_reachable(self):
         # TODO: Check if requests to apiAddress get a response.
+        self.assertTrue(apiAddress is not None)
         r = requests.get(apiAddress)
         self.assertEqual(r.status_code, 200)
     
@@ -36,6 +38,7 @@ class TestApiEndpoints(unittest.TestCase):
             'artist': 'Sematary',
             'title': 'HEART SO PURE' 
         }
+        self.assertTrue(apiAddress is not None)
         r = requests.get(apiAddress, params=payload)
         # TODO: Parse JSON in r.text
         # TODO: Get fileName from JSON
@@ -48,6 +51,7 @@ class TestApiEndpoints(unittest.TestCase):
             'artist': 'Sematary',
             'title': 'HEART SO PURE' 
         }
+        self.assertTrue(apiAddress is not None)
         r = requests.get(apiAddress, params=payload)
         # TODO: Parse JSON in r.text
         # TODO: Get fileName from JSON
@@ -77,8 +81,19 @@ class TestApiEndpoints(unittest.TestCase):
         # TODO: Get fileNames (list) from JSON
         # TODO: Check if each fileName exists in the downloads directory
         self.assertTrue(False)
-        
+
+def find_ip(stdoutString):
+    '''
+    Pulls the IP from the output of a command to start
+    the API.
+    '''
+    return None
+
 if __name__ == "__main__":
     # TODO: Start up local API process, get its IP
+    # command: `fastapi dev main.py`
+    apiProcess = subprocess.run(['fastapi', 'dev', 'main.py'], 
+        capture_output=True)
+    print(f'captured stdout: {apiProcess.stdout}')
     print(f'address is {apiAddress}')
     unittest.main()
