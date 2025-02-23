@@ -9,14 +9,15 @@ Requires that an IP address be passed in
 as a command line argument.
 '''
 
+import json
 import unittest
 import requests
-import subprocess
-import sys
+import re
+import os
 
 apiAddress = None
 
-def valid_ip_address(s):
+def valid_ip_address(s: str):
     '''
     Returns True if `s` is a valid IPv4 address
     in dot notation, False otherwise.
@@ -52,12 +53,23 @@ def valid_ip_address(s):
     # Satisfies all conditions
     return True
 
-def find_ip(stdoutString):
+def find_ip(s):
     '''
     Pulls the IP from the output of a command to start
     the API.
     '''
-    return None
+    ip_pat = re.compile(r'\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d' +
+        r'?\d)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d?\d)\b')
+    s = str(s)
+    res = ip_pat.search(s)
+
+    if res is None:
+        return None
+
+    try:
+        return res.group(0)
+    except IndexError:
+        return None
 
 class TestUtilityFunctions(unittest.TestCase):
     def test_valid_ips_good_ips(self):
@@ -75,25 +87,35 @@ class TestUtilityFunctions(unittest.TestCase):
             [INFO] 2025-02-18 10:34:58 - Server listening on IP address 192.168.1.101.
             [INFO] 2025-02-18 10:35:00 - Vidtagdaemon API is now accepting connections.
         '''
-        ip = find_ip(textBlock)
+        ip = find_ip(str(textBlock))
         self.assertSequenceEqual(ip, '192.168.1.101')
         self.assertTrue(valid_ip_address(ip))
 
 class TestApiEndpoints(unittest.TestCase):
     
     def test_got_valid_address(self):
-        # TODO: Check if apiAddress is a valid IP address.
-        self.assertTrue(False)
+        self.assertTrue(valid_ip_address(apiIp))
         
     def test_api_reachable(self):
-        # TODO: Check if requests to apiAddress get a response.
         self.assertTrue(apiAddress is not None)
         r = requests.get(apiAddress)
         self.assertEqual(r.status_code, 200)
     
     def test_api_folders_created(self):
-        # TODO: Check that the API created its /working and /downloads folders.
-        self.assertTrue(False)
+        # Check if ./working/ exists.
+        workingFolder = os.path.join(os.getcwd(), 'working')
+        workingFolderCreated = os.path.exists(workingFolder)
+        self.assertTrue(workingFolderCreated)
+        
+        # Check if ./downloads/ exists.
+        downloadFolder = os.path.join(os.getcwd(), 'downloads')
+        downloadFolderCreated = os.path.exists(downloadFolder)
+        self.assertTrue(downloadFolderCreated)
+        
+        # Check if vidtagdaemon.json exists.
+        configFile = os.path.join(os.getcwd(), 'vidtagdaemon.json')
+        configFileCreated = os.path.exists(configFile)
+        self.assertTrue(configFileCreated)
     
     def test_download_single(self):
         payload = {
@@ -103,8 +125,13 @@ class TestApiEndpoints(unittest.TestCase):
         }
         self.assertTrue(apiAddress is not None)
         r = requests.get(apiAddress, params=payload)
-        # TODO: Parse JSON in r.text
-        # TODO: Get fileName from JSON
+
+        returned = json.loads(r.text)
+
+        self.assertTrue('fileName' in returned)
+
+        fileName = returned['fileName']
+
         # TODO: Check if fileName exists in downloads directory
         self.assertTrue(False)
     
@@ -148,7 +175,7 @@ class TestApiEndpoints(unittest.TestCase):
 if __name__ == "__main__":
 
     # Start the api, capturing output
-    apiProcess = subprocess.run(['fastapi', 'dev', 'main.py'], capture_output=True, shell=True)
-    apiAddress = find_ip(apiProcess.stdout)
-    print(f'address is {apiAddress}')
+    apiIp = '127.0.0.1'
+    apiPort = '8000'
+    apiAddress = 'http://' + apiIp + ':' + apiPort
     unittest.main()
